@@ -1,0 +1,645 @@
+{
+	"info": {
+		"_postman_id": "9b44cbeb-e3e6-4362-bfd3-17bc5461a95f",
+		"name": "Flask API Stores",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "/register (User registration)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "d6ded2ac-6825-4366-ac45-e800d8523b09",
+						"exec": [
+							"// Check the response (body, status code, time): ",
+							"// 1) json-format, ",
+							"// 2) json value for key \"message\"",
+							"// 3) response status code",
+							"// 4) response time lt 200ms",
+							"",
+							"pm.environment.unset(\"token\");",
+							"",
+							"pm.test(\"Create a new user\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    ",
+							"    pm.expect(jsonData[\"message\"]).to.eql(\"User created successfully.\");",
+							"    pm.expect(pm.response.code).to.be.oneOf([201,202]);",
+							"    pm.expect(pm.response.responseTime).to.be.below(200);",
+							"});",
+							"",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\"username\": \"{{username}}\",\n\"password\": \"{{password}}\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{url}}/register",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"register"
+					]
+				},
+				"description": "Registration"
+			},
+			"response": []
+		},
+		{
+			"name": "/auth (User authorization)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "7d956f38-d3fa-4bc0-87a2-daafc6f12024",
+						"exec": [
+							"// Check that a response without errorsand consists \"access_token\"",
+							"",
+							"pm.test(\"Response should be okay to process\", function () { ",
+							"    pm.response.to.not.be.error;",
+							"    pm.response.to.not.have.jsonBody(\"error\");",
+							"    pm.response.to.have.jsonBody(\"access_token\");",
+							"    pm.response.to.have.status(200);",
+							"    ",
+							"});",
+							"",
+							"// We parse response and set an env variable \"token\" to use it in further requests (a user must be authorized to fetch an item by its name)",
+							"pm.test(\"Set an env variable token\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    ",
+							"    new_token = \"JWT \" + jsonData[\"access_token\"]",
+							"    ",
+							"    pm.environment.set(\"token\", new_token);",
+							"});",
+							"",
+							"",
+							"//Check that a response has headers \"Content-Type\" and its value -- \"application/json\"",
+							"pm.test(\"Content-Type is present\", function () {",
+							"    pm.response.to.have.header(\"Content-Type\");",
+							"    pm.expect(pm.response.headers.get(\"Content-Type\")).to.eql(\"application/json\");",
+							"    ",
+							"});",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\"username\": \"{{username}}\",\n\"password\": \"{{password}}\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{url}}/auth",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"auth"
+					]
+				},
+				"description": "Authorization"
+			},
+			"response": []
+		},
+		{
+			"name": "/store/store_name (Add a new store)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "aba74910-2411-48a8-9e29-27568b58cf12",
+						"exec": [
+							"// Check the response: ",
+							"// 1) json-format, ",
+							"// 2) json value for key \"name\"",
+							"// 3) json value for key \"items\" (is empty for a new store)",
+							"// 4) response status code",
+							"// 5) response time lt 200ms",
+							"",
+							"pm.test(\"Create a new store\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    ",
+							"    store_name = pm.environment.get(\"store_name\");",
+							"    ",
+							"    pm.expect(jsonData.name).to.eql(store_name);",
+							"    pm.expect(jsonData.items).to.eql([]);",
+							"    ",
+							"    pm.expect(pm.response.code).to.be.oneOf([201,202]);",
+							"    pm.expect(pm.response.responseTime).to.be.below(200);",
+							"    ",
+							"    ",
+							"    ",
+							"});",
+							"",
+							"pm.test(\"Save a store_id\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    ",
+							"    pm.environment.set(\"store_id\", jsonData.id);",
+							"    ",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{url}}/store/{{store_name}}",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"store",
+						"{{store_name}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "/stores (Store's list with items)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "03865912-764a-4a84-b2cb-f83ca2529c0f",
+						"exec": [
+							"// Check the response: ",
+							"// 1) json-format, ",
+							"// 2) json value for key \"stores\"",
+							"// 3) json value for key \"stores[0].name\" ",
+							"// 4) json value for key \"stores[0].items\" (is empty for a new store)",
+							"// 5) response status code",
+							"// 6) response time lt 200ms",
+							"",
+							"pm.test(\"Show the store's list\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    ",
+							"    store_name = pm.environment.get(\"store_name\");",
+							"    store_id = pm.environment.get(\"store_id\");",
+							"    ",
+							"    pm.expect(jsonData.stores[0].name).to.eql(store_name);",
+							"    pm.expect(jsonData.stores[0].id).to.eql(store_id);",
+							"    pm.expect(jsonData.stores[0].items).to.eql([]);",
+							"    pm.expect(jsonData.stores).to.eql( [ { id: store_id, name: store_name, items: [] } ]);",
+							"    ",
+							"    pm.response.to.have.status(200);",
+							"",
+							"    pm.expect(pm.response.responseTime).to.be.below(200);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{url}}/stores",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"stores"
+					]
+				},
+				"description": "StoreList"
+			},
+			"response": []
+		},
+		{
+			"name": "/store/store_name (Retrieve a store with items by name)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "b49bbd91-a3a3-414d-894a-4c98a71875a7",
+						"exec": [
+							"// Check the response: ",
+							"// 1) json-format, ",
+							"// 2) json value for key \"name\"",
+							"// 3) json value for key \"items\" (is empty for a new store)",
+							"// 4) response status code",
+							"// 5) response time lt 200ms",
+							"// 6) ",
+							"",
+							"pm.test(\"Retrieve a store with items by name\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    ",
+							"    store_name = pm.environment.get(\"store_name\");",
+							"    store_id = pm.environment.get(\"store_id\");",
+							"    ",
+							"    pm.expect(jsonData.name).to.eql(store_name);",
+							"    pm.expect(jsonData.id).to.eql(store_id);",
+							"    pm.expect(jsonData.items).to.eql([]);",
+							"    ",
+							"    pm.response.to.have.status(200);",
+							"",
+							"    pm.expect(pm.response.responseTime).to.be.below(200);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{url}}/store/{{store_name}}",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"store",
+						"{{store_name}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "/item/item_name (Add a new item)",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"price\": {{price}},\n\t\"store_id\": {{store_id}}\n\t\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{url}}/item/{{item_name}}",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"item",
+						"{{item_name}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "/items (Items's list)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "f461cb09-ff37-41ed-b3ca-62aa3f0b0b3d",
+						"exec": [
+							"// Check the response: ",
+							"// 1) json-format, ",
+							"// 2) json value for key \"items\"",
+							"// 3) json value for key \"items[0].name\" ",
+							"// 4) json value for key \"items[0].price\" ",
+							"// 5) response status code",
+							"// 6) response time lt 200ms",
+							"",
+							"pm.test(\"Show the store's list\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    ",
+							"    item_name = pm.environment.get(\"item_name\");",
+							"    item_price = parseFloat(pm.environment.get(\"price\"));",
+							"    ",
+							"    pm.expect(jsonData.items[0].name).to.eql(item_name);",
+							"    pm.expect(jsonData.items[0].price).to.eql(item_price);",
+							"    pm.expect(jsonData.items).to.eql( [ { \"name\": item_name, \"price\": item_price} ]);",
+							"    ",
+							"    pm.response.to.have.status(200);",
+							"",
+							"    pm.expect(pm.response.responseTime).to.be.below(200);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "{{url}}/items",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"items"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "/item/item_name (Fetch an item by name. Authorization required)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "319bb177-c1eb-4b28-b580-f57c94dff8da",
+						"exec": [
+							"// Check the response: ",
+							"// 1) json-format, ",
+							"// 2) json value for key \"name\"",
+							"// 3) json value for key \"price\" ",
+							"// 4) response status code",
+							"// 5) response time lt 200ms",
+							"// 6) ",
+							"",
+							"pm.test(\"Retrieve a store with items by name\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    ",
+							"    item_name = pm.environment.get(\"item_name\");",
+							"    item_price = parseFloat(pm.environment.get(\"price\"));",
+							"    ",
+							"    pm.expect(jsonData.name).to.eql(item_name);",
+							"    pm.expect(jsonData.price).to.eql(item_price);",
+							"    ",
+							"    pm.response.to.have.status(200);",
+							"",
+							"    pm.expect(pm.response.responseTime).to.be.below(200);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "GET",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "Authorization",
+						"value": "{{token}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{url}}/item/{{item_name}}",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"item",
+						"{{item_name}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "/item/new_item (Update a price of the item by name OR add a new one)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "264f8ca0-5346-414d-83c4-f2f0bd8c7e00",
+						"exec": [
+							"// Check the response: ",
+							"// 1) json-format, ",
+							"// 2) json value for key \"name\"",
+							"// 3) json value for key \"price\" ",
+							"// 4) response status code",
+							"// 5) response time lt 200ms",
+							"// 6) ",
+							"",
+							"pm.test(\"Retrieve a store with items by name\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    ",
+							"    item_name = pm.environment.get(\"item_name\");",
+							"    item_price = parseFloat(pm.environment.get(\"new_price\"));",
+							"    ",
+							"    pm.expect(jsonData.name).to.eql(item_name);",
+							"    pm.expect(jsonData.price).to.eql(item_price);",
+							"    ",
+							"    pm.response.to.have.status(200);",
+							"",
+							"    pm.expect(pm.response.responseTime).to.be.below(200);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "PUT",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"price\": {{new_price}},\n\t\"store_id\": {{store_id}}\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{url}}/item/{{item_name}}",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"item",
+						"{{item_name}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "/store/store_name (Delete a store by name)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "172a5cbf-4da1-495a-858d-404a19408d40",
+						"exec": [
+							"// Check the response (body, status code, time): ",
+							"// 1) json-format, ",
+							"// 2) json value for key \"message\"",
+							"// 3) response status code",
+							"// 4) response time lt 200ms",
+							"",
+							"pm.test(\"Delete a store\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    ",
+							"    pm.expect(jsonData[\"message\"]).to.eql(\"Store deleted\");",
+							"    pm.expect(pm.response.code).to.be.oneOf([200,201,202]);",
+							"    pm.expect(pm.response.responseTime).to.be.below(200);",
+							"",
+							"});",
+							"",
+							"pm.environment.unset(\"store_id\");",
+							"pm.environment.unset(\"store_name\");"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"url": {
+					"raw": "{{url}}/store/{{store_name}}",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"store",
+						"{{store_name}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "/item/item_name (Delete an item by name)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "249e23d4-a84b-4878-af77-98f7bf5f48a4",
+						"exec": [
+							"// Check the response (body, status code, time): ",
+							"// 1) json-format, ",
+							"// 2) json value for key \"message\"",
+							"// 3) response status code",
+							"// 4) response time lt 200ms",
+							"",
+							"pm.test(\"Delete an item\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    ",
+							"    pm.expect(jsonData[\"message\"]).to.eql(\"Item deleted\");",
+							"    pm.expect(pm.response.code).to.be.oneOf([200,201,202]);",
+							"    pm.expect(pm.response.responseTime).to.be.below(200);",
+							"});",
+							"",
+							"",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"url": {
+					"raw": "{{url}}/item/{{item_name}}",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"item",
+						"{{item_name}}"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"protocolProfileBehavior": {}
+}
