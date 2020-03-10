@@ -11,7 +11,7 @@ class StoreSystemTest(BaseTest):
                 StoreModel('coat_store').save_to_db()
                 response = client.get('/store/{}'.format('coat_store'), data={'name': 'coat_store'})
 
-                expected = {'name': 'coat_store', 'items': []}
+                expected = {'id': 1, 'name': 'coat_store', 'items': []}
 
                 self.assertDictEqual(json.loads(response.data), expected)
                 self.assertIsNotNone(StoreModel.find_by_name('coat_store'))
@@ -32,7 +32,7 @@ class StoreSystemTest(BaseTest):
 
                 # {'name': self.name, 'price': self.price}
                 # {'name': self.name, 'items': [item.json() for item in self.items.all()]}
-                expected = {'name': 'coat_store', 'items': [{'name': 'coat', 'price': 200.36}]}
+                expected = {'id': 1, 'name': 'coat_store', 'items': [{'name': 'coat', 'price': 200.36}]}
 
                 self.assertDictEqual(expected, json.loads(response.data))
                 self.assertIsNotNone(item.store)
@@ -51,7 +51,7 @@ class StoreSystemTest(BaseTest):
 
                 response = client.get('/store/{}'.format('coat_store'), data={'name': 'coat_store'})
 
-                expected = {'name': 'coat_store', 'items': []}
+                expected = {'id': 1, 'name': 'coat_store', 'items': []}
 
                 self.assertDictEqual(expected, json.loads(response.data))
                 self.assertIsNone(item.store)
@@ -73,7 +73,7 @@ class StoreSystemTest(BaseTest):
 
                 response = client.post('/store/{}'.format('coat_store'), data={'name': 'coat_store'})
 
-                expected = {'name': 'coat_store', 'items': []}
+                expected = {'id': 1, 'name': 'coat_store', 'items': []}
 
                 self.assertDictEqual(expected, json.loads(response.data))
                 self.assertEqual(response.status_code, 201)
@@ -139,8 +139,8 @@ class StoreSystemTest(BaseTest):
 
                 response = client.get('/stores')
 
-                expected = {'stores': [{'name': 'test_store', 'items': []},
-                                       {'name': 'coat_store', 'items': []}]}
+                expected = {'stores': [{'id': 1, 'name': 'test_store', 'items': []},
+                                       {'id': 2, 'name': 'coat_store', 'items': []}]}
 
                 self.assertDictEqual(expected, json.loads(response.data))
 
@@ -163,10 +163,10 @@ class StoreSystemTest(BaseTest):
                 response = client.get('/stores')
 
                 expected = {'stores':
-                                [{'name': 'test_store', 'items':
+                                [{'id': 1, 'name': 'test_store', 'items':
                                     [{'name': 'test_item', 'price': 100.11},
                                      {'name': 'test_item2', 'price': 200.22}]},
-                                 {'name': 'coat_store', 'items': []}]}
+                                 {'id': 2, 'name': 'coat_store', 'items': []}]}
 
                 self.assertDictEqual(expected, json.loads(response.data))
                 self.assertIsNotNone(store.items)

@@ -12,7 +12,7 @@ class StoreTestIntegration(BaseTest):
             store.save_to_db()
             ItemModel('coat', 200.36, 1).save_to_db()
 
-            expected = {'name': 'coat_store', 'items': [{'name': 'coat', 'price': 200.36}]}
+            expected = {'id': 1,'name': 'coat_store', 'items': [{'name': 'coat', 'price': 200.36}]}
 
             self.assertDictEqual(expected, store.json())
             self.assertIsNotNone(store.items)
@@ -22,7 +22,7 @@ class StoreTestIntegration(BaseTest):
             store = StoreModel('coat_store')
             store.save_to_db()
 
-            expected = {'name': 'coat_store', 'items': []}
+            expected = {'id': 1, 'name': 'coat_store', 'items': []}
 
             self.assertDictEqual(expected, store.json())
             self.assertIsNotNone(store.items)
@@ -49,9 +49,10 @@ class StoreTestIntegration(BaseTest):
         with self.app_context():
             store = StoreModel('coat_store')
             store.save_to_db()
-            ItemModel('coat', 200.36, 1).save_to_db()
+            item = ItemModel('coat', 200.36, 1)
+            item.save_to_db()
 
-            self.assertListEqual(store.items.all(), [])
+            self.assertListEqual(store.items.all(), [item])
 
     def test_find_by_name(self):
         with self.app_context():
